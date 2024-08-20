@@ -7,8 +7,8 @@ import { actionType } from "../context/reducer";
 
 const RowContainer = ({ flag, data, scrollValue }) => {
   const rowContainer = useRef();
-
   const [items, setItems] = useState([]);
+  const [loadingImages, setLoadingImages] = useState({}); // Track loading state for each image
 
   const [{ cartItems }, dispatch] = useStateValue();
 
@@ -28,10 +28,18 @@ const RowContainer = ({ flag, data, scrollValue }) => {
     addtocart();
   }, [items]);
 
+  const handleImageLoad = (id) => {
+    setLoadingImages((prev) => ({ ...prev, [id]: false }));
+  };
+
+  const handleImageError = (id) => {
+    setLoadingImages((prev) => ({ ...prev, [id]: false }));
+  };
+
   return (
     <div
       ref={rowContainer}
-      className={`w-full flex items-center gap-3  my-12 scroll-smooth  ${
+      className={`w-full flex items-center gap-3 my-12 scroll-smooth ${
         flag
           ? "overflow-x-scroll scrollbar-none"
           : "overflow-x-hidden flex-wrap justify-center"
@@ -41,17 +49,27 @@ const RowContainer = ({ flag, data, scrollValue }) => {
         data.map((item) => (
           <div
             key={item?.id}
-            className="w-275 h-[175px] min-w-[275px] md:w-300 md:min-w-[300px]  bg-cardOverlay rounded-lg py-2 px-4  my-12 backdrop-blur-lg hover:drop-shadow-lg flex flex-col items-center justify-evenly relative"
+            className="w-275 h-[175px] min-w-[275px] md:w-300 md:min-w-[300px] bg-cardOverlay rounded-lg py-2 px-4 my-12 backdrop-blur-lg hover:drop-shadow-lg flex flex-col items-center justify-evenly relative"
           >
             <div className="w-full flex items-center justify-between">
               <motion.div
                 className="w-40 h-40 -mt-8 drop-shadow-2xl"
                 whileHover={{ scale: 1.2 }}
               >
+                {loadingImages[item?.id] && (
+                  <div className="w-full h-full flex items-center justify-center">
+                    {/* Add a loading spinner or placeholder here */}
+                    <div className="w-12 h-12 border-4 border-t-4 border-red-600 border-solid rounded-full animate-spin"></div>
+                  </div>
+                )}
                 <img
                   src={item?.imageURL}
-                  alt=""
-                  className="w-full h-full object-contain"
+                  alt={item?.title || "Product"}
+                  className={`w-full h-full object-contain ${
+                    loadingImages[item?.id] ? "hidden" : "block"
+                  }`}
+                  onLoad={() => handleImageLoad(item?.id)}
+                  onError={() => handleImageError(item?.id)}
                 />
               </motion.div>
               <motion.div
@@ -67,23 +85,23 @@ const RowContainer = ({ flag, data, scrollValue }) => {
               <p className="text-textColor font-semibold text-base md:text-lg">
                 {item?.title}
               </p>
-              <p className="mt-1 text-sm text-gray-500">
-                {item?.calories} Calories
-              </p>
+
               <div className="flex items-center gap-8">
                 <p className="text-lg text-headingColor font-semibold">
-                  <span className="text-sm text-red-500">$</span> {item?.price}
+                  <span className="text-sm text-red-500">₹</span> {item?.price}
                 </p>
               </div>
             </div>
           </div>
         ))
       ) : (
-        <div className="w-full flex flex-col items-center justify-center">
-          <img src={NotFound} className="h-340" />
-          <p className="text-xl text-headingColor font-semibold my-2">
-            Items Not Available
-          </p>
+        <div className="relative flex w-64 animate-pulse gap-2 p-4">
+          <div className="h-12 w-12 rounded-full bg-slate-400"></div>
+          <div className="flex-1">
+            <div className="mb-1 h-5 w-3/5 rounded-lg bg-slate-400 text-lg"></div>
+            <div className="h-5 w-[90%] rounded-lg bg-slate-400 text-sm"></div>
+          </div>
+          <div className="absolute bottom-5 right-0 h-4 w-4 rounded-full bg-slate-400"></div>
         </div>
       )}
     </div>

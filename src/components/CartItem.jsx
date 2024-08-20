@@ -3,53 +3,54 @@ import { BiMinus, BiPlus } from "react-icons/bi";
 import { motion } from "framer-motion";
 import { useStateValue } from "../context/StateProvider";
 import { actionType } from "../context/reducer";
-import { fetchCart } from "../utils/fetchLocalStorageData";
-let items = [];
 
 const CartItem = ({ item, setFlag, flag }) => {
   const [{ cartItems }, dispatch] = useStateValue();
-  const [qty, setQty] = useState(item.qty);
+  const [qty, setQty] = useState(item.qty || 1); // Ensure qty has a default value
 
-  const cartDispatch = () => {
-    localStorage.setItem("cartItems", JSON.stringify(items));
+  // Helper function to update cartItems in localStorage and global state
+  const updateCartItems = (updatedItems) => {
+    localStorage.setItem("cartItems", JSON.stringify(updatedItems));
     dispatch({
       type: actionType.SET_CARTITEMS,
-      cartItems: items,
+      cartItems: updatedItems,
     });
   };
 
+  // Function to update quantity
   const updateQty = (action, id) => {
-    if (action == "add") {
-      setQty(qty + 1);
-      cartItems.map((item) => {
-        if (item.id === id) {
-          item.qty += 1;
-          setFlag(flag + 1);
-        }
-      });
-      cartDispatch();
-    } else {
-      // initial state value is one so you need to check if 1 then remove it
-      if (qty == 1) {
-        items = cartItems.filter((item) => item.id !== id);
-        setFlag(flag + 1);
-        cartDispatch();
-      } else {
-        setQty(qty - 1);
-        cartItems.map((item) => {
-          if (item.id === id) {
-            item.qty -= 1;
-            setFlag(flag + 1);
+    const updatedItems = cartItems
+      .map((cartItem) => {
+        if (cartItem.id === id) {
+          if (action === "add") {
+            return { ...cartItem, qty: (cartItem.qty || 1) + 1 };
+          } else if (action === "remove") {
+            if ((cartItem.qty || 1) > 1) {
+              return { ...cartItem, qty: (cartItem.qty || 1) - 1 };
+            } else {
+              return null; // Mark for removal
+            }
           }
-        });
-        cartDispatch();
-      }
-    }
+        }
+        return cartItem;
+      })
+      .filter((item) => item !== null); // Filter out removed items
+
+    // Update local state
+    const updatedQty = updatedItems.find((item) => item.id === id)?.qty || 1;
+    setQty(updatedQty);
+
+    // Update cartItems in localStorage and global state
+    updateCartItems(updatedItems);
+
+    // Update parent component
+    setFlag(flag + 1);
   };
 
   useEffect(() => {
-    items = cartItems;
-  }, [qty, items]);
+    // Sync cartItems with local storage
+    updateCartItems(cartItems);
+  }, [cartItems]);
 
   return (
     <div className="w-full p-1 px-2 rounded-lg bg-cartItem flex items-center gap-2">
@@ -63,7 +64,7 @@ const CartItem = ({ item, setFlag, flag }) => {
       <div className="flex flex-col gap-2">
         <p className="text-base text-gray-50">{item?.title}</p>
         <p className="text-sm block text-gray-300 font-semibold">
-          $ {parseFloat(item?.price) * qty}
+          ₹ {Number(item?.price) * qty}
         </p>
       </div>
 

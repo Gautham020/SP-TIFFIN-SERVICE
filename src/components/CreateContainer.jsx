@@ -23,7 +23,7 @@ import { useStateValue } from "../context/StateProvider";
 
 const CreateContainer = () => {
   const [title, setTitle] = useState("");
-  const [calories, setCalories] = useState("");
+  // const [quantity, setQuantity] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState(null);
   const [imageAsset, setImageAsset] = useState(null);
@@ -88,7 +88,7 @@ const CreateContainer = () => {
   const saveDetails = () => {
     setIsLoading(true);
     try {
-      if (!title || !calories || !imageAsset || !price || !category) {
+      if (!title || !imageAsset || !price || !category) {
         setFields(true);
         setMsg("Required fields can't be empty");
         setAlertStatus("danger");
@@ -102,8 +102,6 @@ const CreateContainer = () => {
           title: title,
           imageURL: imageAsset,
           category: category,
-          calories: calories,
-          qty: 1,
           price: price,
         };
         saveItem(data);
@@ -133,7 +131,7 @@ const CreateContainer = () => {
   const clearData = () => {
     setTitle("");
     setImageAsset(null);
-    setCalories("");
+    // setQuantity("");
     setPrice("");
     setCategory("Select Category");
   };
@@ -148,7 +146,7 @@ const CreateContainer = () => {
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center">
+    <div className="w-full min-h-screen flex items-center justify-center mt-10">
       <div className="w-[90%] md:w-[50%] border border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center gap-4">
         {fields && (
           <motion.p
@@ -244,20 +242,21 @@ const CreateContainer = () => {
         </div>
 
         <div className="w-full flex flex-col md:flex-row items-center gap-3">
-          <div className="w-full py-2 border-b border-gray-300 flex items-center gap-2">
+          {/* <div className="w-full py-2 border-b border-gray-300 flex items-center gap-2">
             <MdFoodBank className="text-gray-700 text-2xl" />
             <input
               type="text"
               required
-              value={calories}
-              onChange={(e) => setCalories(e.target.value)}
-              placeholder="Calories"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              placeholder="Quantity"
               className="w-full h-full text-lg bg-transparent outline-none border-none placeholder:text-gray-400 text-textColor"
             />
-          </div>
+          </div> */}
 
           <div className="w-full py-2 border-b border-gray-300 flex items-center gap-2">
-            <MdAttachMoney className="text-gray-700 text-2xl" />
+            {/* <MdAttachMoney className="text-gray-700 text-2xl" /> */}
+            <i class="fa fa-inr"></i>
             <input
               type="text"
               required

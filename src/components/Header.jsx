@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { MdShoppingBasket, MdAdd, MdLogout } from "react-icons/md";
 import { motion } from "framer-motion";
-
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { app } from "../firebase.config";
-
 import Logo from "../img/logo.png";
 import Avatar from "../img/avatar.png";
 import { Link } from "react-router-dom";
@@ -14,9 +12,7 @@ import { actionType } from "../context/reducer";
 const Header = () => {
   const firebaseAuth = getAuth(app);
   const provider = new GoogleAuthProvider();
-
   const [{ user, cartShow, cartItems }, dispatch] = useStateValue();
-
   const [isMenu, setIsMenu] = useState(false);
 
   const login = async () => {
@@ -37,7 +33,6 @@ const Header = () => {
   const logout = () => {
     setIsMenu(false);
     localStorage.clear();
-
     dispatch({
       type: actionType.SET_USER,
       user: null,
@@ -51,55 +46,59 @@ const Header = () => {
     });
   };
 
-  return (
-    <header className="fixed z-50 w-screen p-3 px-4 md:p-6 md:px-16 bg-primary">
-      {/* desktop & tablet */}
-      <div className="hidden md:flex w-full h-full items-center justify-between">
-        <Link to={"/"} className="flex items-center gap-2">
-          <img src={Logo} className="w-8 object-cover" alt="logo" />
-          <p className="text-headingColor text-xl font-bold"> City</p>
-        </Link>
+  const scrollToSection = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    if (window.innerWidth <= 768) {
+      setIsMenu(false); // Close menu on mobile after selection
+    }
+  };
 
-        <div className="flex items-center gap-8">
+  return (
+    <header className="fixed z-50 w-screen p-3 md:p-6 md:px-16 bg-primary">
+      {/* Desktop & Tablet View */}
+      <div className="hidden md:flex w-full h-full items-center justify-between">
+        <Link to="/" className="flex items-center gap-2 ml-[100px]">
+          <img src={Logo} className="w-100 h-24 object-cover" alt="logo" />
+        </Link>
+        <nav className="flex items-center gap-8">
           <motion.ul
             initial={{ opacity: 0, x: 200 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 200 }}
-            className="flex items-center gap-24 "
+            className="flex items-center gap-24"
           >
-            <li className="text-lg text-textColor hover:text-headingColor duration-100 transition-all ease-in-out cursor-pointer">
+            <li
+              onClick={() => scrollToSection("home")}
+              className="text-lg text-textColor hover:text-headingColor cursor-pointer transition duration-100 ease-in-out"
+            >
               Home
             </li>
-            <li className="text-lg text-textColor hover:text-headingColor duration-100 transition-all ease-in-out cursor-pointer">
+            <li
+              onClick={() => scrollToSection("menu")}
+              className="text-lg text-textColor hover:text-headingColor cursor-pointer transition duration-100 ease-in-out"
+            >
               Menu
             </li>
-            <li className="text-lg text-textColor hover:text-headingColor duration-100 transition-all ease-in-out cursor-pointer">
+            <li
+              onClick={() => scrollToSection("home")}
+              className="text-lg text-textColor hover:text-headingColor cursor-pointer transition duration-100 ease-in-out"
+            >
               About Us
             </li>
-            <li className="text-lg text-textColor hover:text-headingColor duration-100 transition-all ease-in-out cursor-pointer">
-              Service
-            </li>
           </motion.ul>
-
-          <div
-            className="relative flex items-center justify-center"
-            onClick={showCart}
-          >
-            <MdShoppingBasket className="text-textColor text-2xl  cursor-pointer" />
+          <div className="relative flex items-center justify-center" onClick={showCart}>
+            <MdShoppingBasket className="text-textColor text-2xl cursor-pointer" />
             {cartItems && cartItems.length > 0 && (
-              <div className=" absolute -top-2 -right-2 w-5 h-5 rounded-full bg-cartNumBg flex items-center justify-center">
-                <p className="text-xs text-white font-semibold">
-                  {cartItems.length}
-                </p>
+              <div className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-cartNumBg flex items-center justify-center">
+                <p className="text-xs text-white font-semibold">{cartItems.length}</p>
               </div>
             )}
           </div>
-
           <div className="relative">
             <motion.img
               whileTap={{ scale: 0.6 }}
               src={user ? user.photoURL : Avatar}
-              className="w-10 min-w-[40px] h-10 min-h-[40px] drop-shadow-xl cursor-pointer rounded-full"
+              className="w-10 h-10 rounded-full cursor-pointer"
               alt="userprofile"
               onClick={login}
             />
@@ -108,21 +107,20 @@ const Header = () => {
                 initial={{ opacity: 0, scale: 0.6 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.6 }}
-                className="w-40 bg-gray-50 shadow-xl rounded-lg flex flex-col absolute top-12 right-0"
+                className="absolute top-12 right-0 w-40 bg-gray-50 shadow-xl rounded-lg flex flex-col"
               >
-                {user && user.email === "vetrivel.galaxy@gmail.com" && (
-                  <Link to={"/createItem"}>
+                {user && user.email === "gauthamkotian02@gmail.com" && (
+                  <Link to="/createItem">
                     <p
-                      className="px-4 py-2 flex items-center gap-3 cursor-pointer hover:bg-slate-100 transition-all duration-100 ease-in-out text-textColor text-base"
+                      className="px-4 py-2 flex items-center gap-3 cursor-pointer hover:bg-slate-100 transition duration-100 ease-in-out text-textColor text-base"
                       onClick={() => setIsMenu(false)}
                     >
                       New Item <MdAdd />
                     </p>
                   </Link>
                 )}
-
                 <p
-                  className="px-4 py-2 flex items-center gap-3 cursor-pointer hover:bg-slate-100 transition-all duration-100 ease-in-out text-textColor text-base"
+                  className="px-4 py-2 flex items-center gap-3 cursor-pointer hover:bg-slate-100 transition duration-100 ease-in-out text-textColor text-base"
                   onClick={logout}
                 >
                   Logout <MdLogout />
@@ -130,35 +128,27 @@ const Header = () => {
               </motion.div>
             )}
           </div>
-        </div>
+        </nav>
       </div>
 
-      {/* mobile */}
-      <div className="flex items-center justify-between md:hidden w-full h-full ">
-        <div
-          className="relative flex items-center justify-center"
-          onClick={showCart}
-        >
-          <MdShoppingBasket className="text-textColor text-2xl  cursor-pointer" />
+      {/* Mobile View */}
+      <div className="flex items-center justify-between md:hidden w-full h-full">
+        <div className="relative flex items-center justify-center" onClick={showCart}>
+          <MdShoppingBasket className="text-textColor text-2xl cursor-pointer" />
           {cartItems && cartItems.length > 0 && (
-            <div className=" absolute -top-2 -right-2 w-5 h-5 rounded-full bg-cartNumBg flex items-center justify-center">
-              <p className="text-xs text-white font-semibold">
-                {cartItems.length}
-              </p>
+            <div className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-cartNumBg flex items-center justify-center">
+              <p className="text-xs text-white font-semibold">{cartItems.length}</p>
             </div>
           )}
         </div>
-
-        <Link to={"/"} className="flex items-center gap-2">
-          <img src={Logo} className="w-8 object-cover" alt="logo" />
-          <p className="text-headingColor text-xl font-bold"> City</p>
+        <Link to="/" className="flex items-center gap-2">
+          <img src={Logo} className="w-100 h-20 object-cover" alt="logo" />
         </Link>
-
         <div className="relative">
           <motion.img
             whileTap={{ scale: 0.6 }}
             src={user ? user.photoURL : Avatar}
-            className="w-10 min-w-[40px] h-10 min-h-[40px] drop-shadow-xl cursor-pointer rounded-full"
+            className="w-10 h-10 rounded-full cursor-pointer"
             alt="userprofile"
             onClick={login}
           />
@@ -167,45 +157,40 @@ const Header = () => {
               initial={{ opacity: 0, scale: 0.6 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.6 }}
-              className="w-40 bg-gray-50 shadow-xl rounded-lg flex flex-col absolute top-12 right-0"
+              className="absolute top-12 right-0 w-40 bg-gray-50 shadow-xl rounded-lg flex flex-col"
             >
-              {user && user.email === "vetrivel.galaxy@gmail.com" && (
-                <Link to={"/createItem"}>
-                  <p className="px-4 py-2 flex items-center gap-3 cursor-pointer hover:bg-slate-100 transition-all duration-100 ease-in-out text-textColor text-base">
+              {user && user.email === "gauthamkotian02@gmail.com" && (
+                <Link to="/createItem">
+                  <p
+                    className="px-4 py-2 flex items-center gap-3 cursor-pointer hover:bg-slate-100 transition duration-100 ease-in-out text-textColor text-base"
+                    onClick={() => setIsMenu(false)}
+                  >
                     New Item <MdAdd />
                   </p>
                 </Link>
               )}
-
-              <ul className="flex flex-col ">
+              <ul className="flex flex-col">
                 <li
-                  className="text-base text-textColor hover:text-headingColor duration-100 transition-all ease-in-out cursor-pointer hover:bg-slate-100 px-4 py-2"
-                  onClick={() => setIsMenu(false)}
+                  onClick={() => scrollToSection("home")}
+                  className="text-base text-textColor hover:text-headingColor cursor-pointer hover:bg-slate-100 px-4 py-2"
                 >
                   Home
                 </li>
                 <li
-                  className="text-base text-textColor hover:text-headingColor duration-100 transition-all ease-in-out cursor-pointer hover:bg-slate-100 px-4 py-2"
-                  onClick={() => setIsMenu(false)}
+                  onClick={() => scrollToSection("menu")}
+                  className="text-base text-textColor hover:text-headingColor cursor-pointer hover:bg-slate-100 px-4 py-2"
                 >
                   Menu
                 </li>
                 <li
-                  className="text-base text-textColor hover:text-headingColor duration-100 transition-all ease-in-out cursor-pointer hover:bg-slate-100 px-4 py-2"
-                  onClick={() => setIsMenu(false)}
+                  onClick={() => scrollToSection("about")}
+                  className="text-base text-textColor hover:text-headingColor cursor-pointer hover:bg-slate-100 px-4 py-2"
                 >
                   About Us
                 </li>
-                <li
-                  className="text-base text-textColor hover:text-headingColor duration-100 transition-all ease-in-out cursor-pointer hover:bg-slate-100 px-4 py-2"
-                  onClick={() => setIsMenu(false)}
-                >
-                  Service
-                </li>
               </ul>
-
               <p
-                className="m-2 p-2 rounded-md shadow-md flex items-center justify-center bg-gray-200 gap-3 cursor-pointer hover:bg-gray-300 transition-all duration-100 ease-in-out text-textColor text-base"
+                className="m-2 p-2 rounded-md shadow-md flex items-center justify-center bg-gray-200 gap-3 cursor-pointer hover:bg-gray-300 transition duration-100 ease-in-out text-textColor text-base"
                 onClick={logout}
               >
                 Logout <MdLogout />

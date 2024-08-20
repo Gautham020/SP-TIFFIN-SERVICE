@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { MdOutlineKeyboardBackspace } from "react-icons/md";
 import { RiRefreshFill } from "react-icons/ri";
-
 import { motion } from "framer-motion";
 import { useStateValue } from "../context/StateProvider";
 import { actionType } from "../context/reducer";
@@ -10,9 +9,9 @@ import CartItem from "./CartItem";
 
 const CartContainer = () => {
   const [{ cartShow, cartItems, user }, dispatch] = useStateValue();
-  const [flag, setFlag] = useState(1);
   const [tot, setTot] = useState(0);
 
+  // Toggle cart visibility
   const showCart = () => {
     dispatch({
       type: actionType.SET_CART_SHOW,
@@ -20,21 +19,53 @@ const CartContainer = () => {
     });
   };
 
+  // Calculate total and subtotal whenever cartItems changes
   useEffect(() => {
-    let totalPrice = cartItems.reduce(function (accumulator, item) {
-      return accumulator + item.qty * item.price;
-    }, 0);
-    setTot(totalPrice);
-    console.log(tot);
-  }, [tot, flag]);
+    if (Array.isArray(cartItems)) {
+      const totalPrice = cartItems.reduce((accumulator, item) => {
+        const itemPrice = Number(item.price) || 0;
+        const itemQty = Number(item.qty) || 1; // Default qty is 1
+        return accumulator + itemQty * itemPrice;
+      }, 0);
+      setTot(totalPrice);
+    }
+  }, [cartItems]);
 
+  // Clear all items from the cart
   const clearCart = () => {
     dispatch({
       type: actionType.SET_CARTITEMS,
       cartItems: [],
     });
-
     localStorage.setItem("cartItems", JSON.stringify([]));
+  };
+
+  // Generate the WhatsApp message
+  // Generate the WhatsApp message
+  const generateWhatsAppMessage = () => {
+    const userDetails = user
+      ? `User: ${user.displayName || "Unknown"}, ${user.email || "No Email"}`
+      : "User: Anonymous";
+
+    const cartDetails = cartItems
+      .map((item) => {
+        const itemPrice = Number(item.price) || 0;
+        const itemQty = Number(item.qty) || 1; // Default qty is 1
+        const totalItemPrice = (itemPrice * itemQty).toFixed(2);
+        return `Item: ${
+          item.title || "No Title"
+        }, Quantity: ${itemQty}, Price: ₹${totalItemPrice}`;
+      })
+      .join("\n");
+
+    const message = `*Order Details:*\n\n${cartDetails}\n\n*Total Price:* ₹${(
+      tot + 100
+    ).toFixed(2)}\n\n${userDetails}`;
+
+    // Use the WhatsApp URL scheme to open the app directly
+    return `whatsapp://send?phone=7760723182&text=${encodeURIComponent(
+      message
+    )}`;
   };
 
   return (
@@ -49,62 +80,61 @@ const CartContainer = () => {
           <MdOutlineKeyboardBackspace className="text-textColor text-3xl" />
         </motion.div>
         <p className="text-textColor text-lg font-semibold">Cart</p>
-
         <motion.p
           whileTap={{ scale: 0.75 }}
-          className="flex items-center gap-2 p-1 px-2 my-2 bg-gray-100 rounded-md hover:shadow-md  cursor-pointer text-textColor text-base"
+          className="flex items-center gap-2 p-1 px-2 my-2 bg-gray-100 rounded-md hover:shadow-md cursor-pointer text-textColor text-base"
           onClick={clearCart}
         >
           Clear <RiRefreshFill />
         </motion.p>
       </div>
 
-      {/* bottom section */}
+      {/* Bottom section */}
       {cartItems && cartItems.length > 0 ? (
         <div className="w-full h-full bg-cartBg rounded-t-[2rem] flex flex-col">
-          {/* cart Items section */}
+          {/* Cart Items section */}
           <div className="w-full h-340 md:h-42 px-6 py-10 flex flex-col gap-3 overflow-y-scroll scrollbar-none">
-            {/* cart Item */}
-            {cartItems &&
-              cartItems.length > 0 &&
-              cartItems.map((item) => (
-                <CartItem
-                  key={item.id}
-                  item={item}
-                  setFlag={setFlag}
-                  flag={flag}
-                />
-              ))}
+            {/* Cart Item */}
+            {cartItems.map((item) => (
+              <CartItem
+                key={item.id}
+                item={item}
+                setFlag={setTot} // Update the flag to recalculate total
+                flag={tot} // Pass current total as flag
+              />
+            ))}
           </div>
 
-          {/* cart total section */}
+          {/* Cart total section */}
           <div className="w-full flex-1 bg-cartTotal rounded-t-[2rem] flex flex-col items-center justify-evenly px-8 py-2">
             <div className="w-full flex items-center justify-between">
               <p className="text-gray-400 text-lg">Sub Total</p>
-              <p className="text-gray-400 text-lg">$ {tot}</p>
+              <p className="text-gray-400 text-lg">
+                ₹ {Number(tot).toFixed(2)}
+              </p>
             </div>
             <div className="w-full flex items-center justify-between">
               <p className="text-gray-400 text-lg">Delivery</p>
-              <p className="text-gray-400 text-lg">$ 2.5</p>
+              <p className="text-gray-400 text-lg">₹ 100</p>
             </div>
-
             <div className="w-full border-b border-gray-600 my-2"></div>
-
             <div className="w-full flex items-center justify-between">
               <p className="text-gray-200 text-xl font-semibold">Total</p>
               <p className="text-gray-200 text-xl font-semibold">
-                ${tot + 2.5}
+                ₹ {(Number(tot) + 100).toFixed(2)}
               </p>
             </div>
-
             {user ? (
-              <motion.button
-                whileTap={{ scale: 0.8 }}
-                type="button"
-                className="w-full p-2 rounded-full bg-gradient-to-tr from-orange-400 to-orange-600 text-gray-50 text-lg my-2 hover:shadow-lg"
-              >
-                Check Out
-              </motion.button>
+              <>
+                <a
+                  href={generateWhatsAppMessage()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full p-2 rounded-full bg-gradient-to-tr from-green-400 to-green-600 text-gray-50 text-lg my-2 hover:shadow-lg text-center"
+                >
+                  Send Cart to Admin
+                </a>
+              </>
             ) : (
               <motion.button
                 whileTap={{ scale: 0.8 }}
@@ -118,7 +148,7 @@ const CartContainer = () => {
         </div>
       ) : (
         <div className="w-full h-full flex flex-col items-center justify-center gap-6">
-          <img src={EmptyCart} className="w-300" alt="" />
+          <img src={EmptyCart} className="w-300" alt="Empty Cart" />
           <p className="text-xl text-textColor font-semibold">
             Add some items to your cart
           </p>
